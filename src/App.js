@@ -57,7 +57,7 @@ function Main () {
       <Container>
         <Grid stackable columns='equal'>
           <Grid.Row stretched centered>
-            <Bridge subAccount={accountPair} />
+            <Bridge subAccount={accountPair} setAccountAddress={setAccountAddress} />
           </Grid.Row>
           <Grid.Row stretched>
             <Balances />

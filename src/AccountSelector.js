@@ -56,7 +56,7 @@ function Main (props) {
         <Menu.Menu style={{ display: 'flex', alignItems: 'center' }}>
           <Image src={`${process.env.PUBLIC_URL}/assets/Logo.png`} width={140}/>
         </Menu.Menu>
-        <Menu.Menu position='right' style={{ alignItems: 'center' }}>
+        {/* <Menu.Menu position='right' style={{ alignItems: 'center' }}>
           { !accountSelected
             ? <span>
               Add your account with the{' '}
@@ -90,7 +90,7 @@ function Main (props) {
             value={accountSelected}
           />
           <BalanceAnnotation accountSelected={accountSelected} />
-        </Menu.Menu>
+        </Menu.Menu> */}
       </Container>
     </Menu>
   );

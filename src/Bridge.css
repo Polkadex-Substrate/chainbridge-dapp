@@ -14,3 +14,14 @@
     text-align: left;
     margin-bottom: 1em;
 }
+
+.bridge .sub-account {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    margin-bottom: 1em;
+}
+
+.bridge .sub-account label {
+    margin-right: 0.5em;
+}
