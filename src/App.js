@@ -15,6 +15,7 @@ import NodeInfo from './NodeInfo';
 import TemplateModule from './TemplateModule';
 import Transfer from './Transfer';
 import Upgrade from './Upgrade';
+import Bridge from './Bridge';
 
 function Main () {
   const [accountAddress, setAccountAddress] = useState(null);
@@ -55,11 +56,8 @@ function Main () {
       </Sticky>
       <Container>
         <Grid stackable columns='equal'>
-          <Grid.Row stretched>
-            <NodeInfo />
-            <Metadata />
-            <BlockNumber />
-            <BlockNumber finalized />
+          <Grid.Row stretched centered>
+            <Bridge subAccount={accountPair} />
           </Grid.Row>
           <Grid.Row stretched>
             <Balances />

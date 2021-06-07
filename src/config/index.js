@@ -14,5 +14,5 @@ const envVars = envVarNames.reduce((mem, n) => {
   return mem;
 }, {});
 
-const config = { ...configCommon, ...configEnv, ...envVars, types };
+const config = { ...configCommon, ...configEnv, ...envVars, types, CHAIN_ID: 4, RPC_URL: 'https://rinkeby.eth.aragon.network/', ADDR_BRIDGE: '0x971d2A858691803e0241568cD2F5995042c72b6C' };
 export default config;

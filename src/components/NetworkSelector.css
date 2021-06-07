@@ -1,0 +1,27 @@
+.network-selector-container {
+    display: flex;
+    flex-direction: column;
+    width: 10em;
+}
+
+.network-selector-container label {
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+.network-selector {
+    box-shadow: rgb(11 14 17) 0px 2px 8px;
+    padding: 1em;
+    flex: 1 1 0%;
+    height: 7.75em;
+    display: flex;
+    flex-direction: column;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    border-radius: 0.5em;
+}
+
+.network-selector-icon img {
+    width: 2.5em;
+    height: 2.5em;
+}

@@ -53,8 +53,8 @@ function Main (props) {
       }}
     >
       <Container>
-        <Menu.Menu>
-          <Image src={`${process.env.PUBLIC_URL}/assets/substrate-logo.png`} size='mini' />
+        <Menu.Menu style={{ display: 'flex', alignItems: 'center' }}>
+          <Image src={`${process.env.PUBLIC_URL}/assets/Logo.png`} width={140}/>
         </Menu.Menu>
         <Menu.Menu position='right' style={{ alignItems: 'center' }}>
           { !accountSelected
