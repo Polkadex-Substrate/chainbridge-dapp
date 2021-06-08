@@ -1,0 +1,2 @@
+(this["webpackJsonppolkadex-chainbridge-dapp"]=this["webpackJsonppolkadex-chainbridge-dapp"]||[]).push([[12],{1154:function(p,n){},1554:function(p,n){},1655:function(p,n){}}]);
+//# sourceMappingURL=12.04fc3321.chunk.js.map
