@@ -51,6 +51,7 @@ function Main (props) {
     if (!api || palletRpc === '') { return; }
     const callables = Object.keys(getApiType(api, interxType)[palletRpc]).sort()
       .map(c => ({ key: c, value: c, text: c }));
+    console.log(callables);
     setCallables(callables);
   };
 
@@ -122,6 +123,7 @@ function Main (props) {
     setFormState(formState => {
       let res;
       const { state, value } = data;
+      console.log(state, value)
       if (typeof state === 'object') {
         // Input parameter updated
         const { ind, paramField: { type } } = state;

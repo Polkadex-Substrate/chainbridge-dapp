@@ -121,7 +121,9 @@ function TxButton ({
     result.isNone ? setStatus('None') : setStatus(result.toString());
 
   const query = async () => {
+    console.log('query', paramFields, inputParams)
     const transformed = transformParams(paramFields, inputParams);
+    console.log('transformed', transformed)
     const unsub = await api.query[palletRpc][callable](...transformed, queryResHandler);
     setUnsub(() => unsub);
   };
@@ -138,6 +140,7 @@ function TxButton ({
   };
 
   const transaction = async () => {
+    console.log(unsub);
     if (unsub) {
       unsub();
       setUnsub(null);

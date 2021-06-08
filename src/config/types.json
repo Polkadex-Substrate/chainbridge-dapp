@@ -1,28 +1,32 @@
 {
-    "chainbridge::ChainId": "u8",
-    "ChainId": "u8",
-    "ResourceId": "[u8; 32]",
-    "DepositNonce": "u64",
-    "ProposalVotes": {
-      "votes_for": "Vec<MultiAddress>",
-      "votes_against": "Vec<MultiAddress>",
-      "status": "enum"
-    },
-    "Erc721Token": {
-      "id": "TokenId",
-      "metadata": "Vec<u8>"
-    },
-    "TokenId": "U256",
-    "Address": "MultiAddress",
-    "LookupSource": "MultiAddress",
-    "AssetId": {
-      "_enum": {
-        "POLKADEX": null,
-        "DOT": null,
-        "CHAINSAFE": "H160"
-      }
-    },
-    "CurrencyIdOf": "AssetId",
-    "CurrencyId": "AssetId",
-    "ShardIdentifier": "H256"
+  "chainbridge::ChainId": "u8",
+  "ChainId": "u8",
+  "ResourceId": "[u8; 32]",
+  "DepositNonce": "u64",
+  "ProposalVotes": {
+    "votes_for": "Vec<MultiAddress>",
+    "votes_against": "Vec<MultiAddress>",
+    "status": "enum"
+  },
+  "Erc721Token": {
+    "id": "TokenId",
+    "metadata": "Vec<u8>"
+  },
+  "TokenId": "U256",
+  "Address": "MultiAddress",
+  "LookupSource": "MultiAddress",
+  "AssetId": {
+    "_enum": [
+      "POLKADEX", "DOT", "CHAINSAFE"
+    ]
+  },
+  "CHAINSAFE": "H160",
+  "CurrencyIdOf": "AssetId",
+  "CurrencyId": "AssetId",
+  "ShardIdentifier": "H256",
+  "AccountData": {
+    "free": "u128",
+    "reserved": "u128",
+    "frozen": "u128"
   }
+}

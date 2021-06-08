@@ -8,7 +8,9 @@ import { create as createBridge } from './lib/bridge';
 import { TxButton } from './substrate-lib/components';
 import { NetworkSelector } from './components';
 import config from './config';
+import { tokens } from './utils/tokens';
 import './Bridge.css';
+import { checkAddress, decodeAddress } from '@polkadot/util-crypto';
 
 const expandDecimals = (amount, decimals = 18) => {
   return EthersUtils.parseUnits(String(amount), decimals);
@@ -18,14 +20,16 @@ export default function Main (props) {
   const [status, setStatus] = useState(null);
   const [formState, setFormState] = useState({ tokenAddress: null, recipient: null, amount: 0, src: 'polkadex', dest: 'rinkeby' });
   const [loadingEthAccInfo, setLoadingEthAccInfo] = useState(false);
+  const [loadingSubAccInfo, setLoadingSubAccInfo] = useState(false);
   const [pending, setPending] = useState(false);
   const [ethAccInfo, setEthAccInfo] = useState(null);
+  const [subAccInfo, setSubAccInfo] = useState(null);
   const { subAccount } = props;
   const { account: ethAccount, connect, ethereum } = useWallet();
   const { tokenAddress, recipient, amount, src, dest } = formState;
   const ethers = useMemo(() => (ethereum ? new EthersProviders.Web3Provider(ethereum) : null), [ethereum]);
 
-  const signer = ethers ? ethers.getSigner() : null;
+  const signer = ethers?.getSigner() || new EthersProviders.InfuraProvider(process.env.REACT_APP_INFURA_NETWORK, process.env.REACT_APP_INFURA_KEY);
   
   const checkMetaMask = useCallback(async () => {
     const activate = (connector) => connect(connector);
@@ -58,25 +62,46 @@ export default function Main (props) {
 
   const loadEthAccInfo = async (tokenAddress) => {
     setLoadingEthAccInfo(true);
-    const erc20Token = createERC20(tokenAddress, signer);
-    const [balance, allowance] = await Promise.all([erc20Token.balanceOf(ethAccount), erc20Token.allowance(ethAccount, config.ADDR_BRIDGE)]);
-    setEthAccInfo({ balance, allowance });
+    setEthAccInfo(null)
+    try {
+      const erc20Token = createERC20(tokenAddress, signer);
+      const balance = ethAccount ? await erc20Token.balanceOf(ethAccount) : null;
+      const allowance = ethAccount ? await erc20Token.allowance(ethAccount, config.ADDR_BRIDGE) : null;
+      const decimals = await erc20Token.decimals();
+      setEthAccInfo({ balance, allowance, decimals });
+    } catch (e) {
+      console.error(e);
+    }
+    
     setLoadingEthAccInfo(false);
   }
 
+  const loadSubAccInfo = async () => {
+    setLoadingSubAccInfo(true);
+
+    setSubAccInfo(null);
+    await api.query.tokens.accounts(subAccount.address, {"CHAINSAFE": tokenAddress}, result => {
+      if (result) {
+        const info = JSON.parse(result.toString());
+        setSubAccInfo(info);
+      }
+    });
+
+    setLoadingSubAccInfo(false);
+  }
+
   const onChange = async (_, data) => {
+    setFormState(prev => ({ ...prev, [data.state]: data.value }));
+    
     if (data.state === 'tokenAddress') {
-      if (src === 'rinkeby') {
-        try {
-          const tokenAddress = Web3.utils.toChecksumAddress(data.value);
-          await loadEthAccInfo(tokenAddress)
-        } catch (e) {
-          console.error(e);
-          setEthAccInfo(null);
-        }
+      if (src === 'polkadex') {
+        await loadSubAccInfo();
+      }
+      if (Web3.utils.isAddress(data.value)) {
+        const tokenAddress = Web3.utils.toChecksumAddress(data.value);
+        await loadEthAccInfo(tokenAddress)
       }
     }
-    setFormState(prev => ({ ...prev, [data.state]: data.value }));
   }
 
   const switchNetwork = async () => {
@@ -103,23 +128,25 @@ export default function Main (props) {
     setPending(true);
     const decimals = await erc20Token.decimals();
 
+    const target = keyring.getPair(recipient)
+
     const data = EthersUtils.hexZeroPad(tokenAddress, 32) + // token Address (32 bytes)
             EthersUtils.hexZeroPad(EthersUtils.bigNumberify(expandDecimals(amount, decimals)).toHexString(), 32).substr(2) +    // Deposit Amount        (32 bytes)
-            EthersUtils.hexZeroPad(EthersUtils.hexlify((recipient.length - 2)/2), 32).substr(2) +    // len(recipientAddress) (32 bytes)
-            recipient.substr(2);                    // recipientAddress      (?? bytes)
-    
-    const bridgeContract = createBridge(tokenAddress, signer);
+            EthersUtils.hexZeroPad(EthersUtils.hexlify(target.publicKey.length / 2), 32).substr(2) +    // len(recipientAddress) (32 bytes)
+            EthersUtils.hexlify(target.publicKey).substr(2);                    // recipientAddress      (?? bytes)
+
+    const bridgeContract = createBridge(config.ADDR_BRIDGE, signer);
     try {
       const txDeposit = await bridgeContract.deposit(1, '0x000000000000000000000000000000c76ebe4a02bbc34786d860b355f5a5ce00', data);
       await txDeposit.wait();
-      console.log('deposited');
+      await loadEthAccInfo(tokenAddress);
     } catch (e) {
       console.error(e);
     }
     setPending(false);
   }
 
-  const { keyring } = useSubstrate();
+  const { keyring, api } = useSubstrate();
   const { setAccountAddress } = props;
   const [accountSelected, setAccountSelected] = useState('');
 
@@ -144,12 +171,13 @@ export default function Main (props) {
     // Update state with new account address
     setAccountAddress(address);
     setAccountSelected(address);
+    loadSubAccInfo()
   };
   
   const subBalance = 10000;
 
-  const isValidAsset = src === 'rinkeby' ? !!ethAccInfo : !!tokenAddress;
-  const isValidRecipient = !!recipient;
+  const isValidAsset = Web3.utils.isAddress(tokenAddress);
+  const isValidRecipient = !!recipient && (src === 'rinkeby' ? checkAddress(recipient, 42)[0] : Web3.utils.isAddress(recipient));
   const isValidAmount = !!amount && (src === 'rinkeby' ? amount <= ethAccInfo?.allowance && amount <= ethAccInfo.balance : amount <= subBalance);
 
   const showEthConnectWallet = src === 'rinkeby' && !ethAccount;
@@ -157,10 +185,16 @@ export default function Main (props) {
   const showEthTransfer = src === 'rinkeby' && ethAccount && !showEthApprove;
   const disableEthTransfer = !ethAccount || !ethAccInfo || !isValidRecipient || !isValidAmount;
 
-  const showSubTransfer = src === 'polkadex';
+  const showSubTransfer = src === 'polkadex' && !!ethAccount;
   const disableSubTransfer = !isValidAsset || !isValidRecipient || !isValidAmount;
 
-  console.log(ethAccInfo)
+  const assetOptions = tokens.map(token => ({
+    key: token.address,
+    value: token.address,
+    text: token.name,
+    image: { src: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${Web3.utils.toChecksumAddress(token.address)}/logo.png` }
+  }));
+
   return (
     <Grid.Column width={8} textAlign="center" className="bridge">
       <h1>Bridge</h1>
@@ -189,7 +223,20 @@ export default function Main (props) {
             />
           </div>
         )}
-        <Form.Field>
+        <Form.Field error={!!tokenAddress && !isValidAsset}>
+          {/* <Dropdown
+            search
+            selection
+            clearable
+            labeled
+            placeholder='Token Address'
+            options={assetOptions}
+            onChange={(_, dropdown) => {
+              console.log(dropdown);
+            }}
+            value={tokenAddress || ''}
+            disabled={pending}
+          /> */}
           <Input
             fluid
             label='Asset'
@@ -204,7 +251,10 @@ export default function Main (props) {
         {src === 'rinkeby' && <div className="account-info account-balance">
           Your Balance: {ethAccInfo ? ethAccInfo.balance : ''} {loadingEthAccInfo && <Loader />}
         </div>}
-        <Form.Field>
+        {src === 'polkadex' && <div className="account-info account-balance">
+          Your Balance: {subAccInfo ? subAccInfo.free : ''} {loadingSubAccInfo && <Loader />}
+        </div>}
+        <Form.Field error={!!recipient && !isValidRecipient}>
           <Input
             fluid
             label='Recipient'
@@ -216,7 +266,7 @@ export default function Main (props) {
             disabled={pending}
           />
         </Form.Field>
-        <Form.Field>
+        <Form.Field error={!(amount > 0)}>
           <Input
             fluid
             label='Amount'
@@ -239,7 +289,7 @@ export default function Main (props) {
             attrs={{
               palletRpc: 'example',
               callable: 'transferNative',
-              inputParams: [tokenAddress, amount, recipient, 0],
+              inputParams: [tokenAddress, amount * Math.pow(10, ethAccount.decimals), recipient, 0],
               paramFields: [true, true, true, true],
             }}
             disabled={disableSubTransfer}

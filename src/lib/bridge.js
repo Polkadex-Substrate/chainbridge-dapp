@@ -966,7 +966,7 @@ export const create = (address, provider) => {
   // READ
 
   // WRITE
-  const deposit = (destId, resourceId, data) => contract.deposit(destId, resourceId, data);
+  const deposit = (destId, resourceId, data) => contract.deposit(destId, resourceId, data, { gasPrice: "0x77359400", gasLimit: "0x7a1200"});
 
   return { deposit };
 }
