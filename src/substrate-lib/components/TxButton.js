@@ -140,7 +140,6 @@ function TxButton ({
   };
 
   const transaction = async () => {
-    console.log(unsub);
     if (unsub) {
       unsub();
       setUnsub(null);
