@@ -59,7 +59,7 @@ function Main () {
           <Grid.Row stretched centered>
             <Bridge subAccount={accountPair} setAccountAddress={setAccountAddress} />
           </Grid.Row>
-          <Grid.Row stretched>
+          {/* <Grid.Row stretched>
             <Balances />
           </Grid.Row>
           <Grid.Row>
@@ -72,7 +72,7 @@ function Main () {
           </Grid.Row>
           <Grid.Row>
             <TemplateModule accountPair={accountPair} />
-          </Grid.Row>
+          </Grid.Row> */}
         </Grid>
       </Container>
       <DeveloperConsole />
