@@ -129,11 +129,12 @@ export default function Main (props) {
     const decimals = await erc20Token.decimals();
 
     const target = keyring.getPair(recipient)
+    const publicKey = EthersUtils.hexlify(target.publicKey);
 
     const data = EthersUtils.hexZeroPad(tokenAddress, 32) + // token Address (32 bytes)
             EthersUtils.hexZeroPad(EthersUtils.bigNumberify(expandDecimals(amount, decimals)).toHexString(), 32).substr(2) +    // Deposit Amount        (32 bytes)
-            EthersUtils.hexZeroPad(EthersUtils.hexlify(target.publicKey.length / 2), 32).substr(2) +    // len(recipientAddress) (32 bytes)
-            EthersUtils.hexlify(target.publicKey).substr(2);                    // recipientAddress      (?? bytes)
+            EthersUtils.hexZeroPad(EthersUtils.hexlify((publicKey.length - 2) / 2), 32).substr(2) +    // len(recipientAddress) (32 bytes)
+            publicKey.substr(2);                    // recipientAddress      (?? bytes)
 
     const bridgeContract = createBridge(config.ADDR_BRIDGE, signer);
     try {
@@ -185,7 +186,7 @@ export default function Main (props) {
   const showEthTransfer = src === 'rinkeby' && ethAccount && !showEthApprove;
   const disableEthTransfer = !ethAccount || !ethAccInfo || !isValidRecipient || !isValidAmount;
 
-  const showSubTransfer = src === 'polkadex' && !!ethAccount;
+  const showSubTransfer = src === 'polkadex' && !!ethAccInfo;
   const disableSubTransfer = !isValidAsset || !isValidRecipient || !isValidAmount;
 
   const assetOptions = tokens.map(token => ({
@@ -289,13 +290,13 @@ export default function Main (props) {
             attrs={{
               palletRpc: 'example',
               callable: 'transferNative',
-              inputParams: [tokenAddress, amount * Math.pow(10, ethAccount.decimals), recipient, 0],
+              inputParams: [tokenAddress, `${amount * Math.pow(10, ethAccInfo?.decimals)}`, recipient, 0],
               paramFields: [true, true, true, true],
             }}
             disabled={disableSubTransfer}
           />}
         </Form.Field>
-        <div style={{ overflowWrap: 'break-word' }}>{status}</div>
+        {src === 'polkadex' && <div style={{ overflowWrap: 'break-word' }}>{status}</div>}
         <div>Please wait 3-4 mins after you confirmed the transfer and check your balances on the destination</div>
       </Form>
     </Grid.Column>

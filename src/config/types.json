@@ -17,13 +17,28 @@
   "LookupSource": "MultiAddress",
   "AssetId": {
     "_enum": [
-      "POLKADEX", "DOT", "CHAINSAFE"
+      "POLKADEX",
+      "DOT",
+      "CHAINSAFE"
     ]
   },
   "CHAINSAFE": "H160",
   "CurrencyIdOf": "AssetId",
   "CurrencyId": "AssetId",
   "ShardIdentifier": "H256",
+  "BalanceOf": "Balance",
+  "AccountInfo": "AccountInfoWithTripleRefCount",
+  "AccountInfoWithTripleRefCount": {
+    "nonce": "Index",
+    "refcount": "RefCount",
+    "providers": "RefCount",
+    "sufficients": "RefCount",
+    "sufficients1": "RefCount",
+    "sufficients2": "RefCount",
+    "sufficients3": "RefCount",
+    "sufficients4": "RefCount",
+    "data": "AccountData"
+  },
   "AccountData": {
     "free": "u128",
     "reserved": "u128",
