@@ -66,7 +66,7 @@ export default function Main (props) {
     try {
       const erc20Token = createERC20(tokenAddress, signer);
       const balance = ethAccount ? await erc20Token.balanceOf(ethAccount) : null;
-      const allowance = ethAccount ? await erc20Token.allowance(ethAccount, config.ADDR_BRIDGE) : null;
+      const allowance = ethAccount ? await erc20Token.allowance(ethAccount, config.ADDR_ERC20_HANDLER) : null;
       const decimals = await erc20Token.decimals();
       setEthAccInfo({ balance, allowance, decimals });
     } catch (e) {
@@ -113,7 +113,7 @@ export default function Main (props) {
     const erc20Token = createERC20(tokenAddress, signer);
     setPending(true);
     try {
-      const txApprove = await erc20Token.approve(config.ADDR_BRIDGE, EthersConstants.MaxUint256);
+      const txApprove = await erc20Token.approve(config.ADDR_ERC20_HANDLER, EthersConstants.MaxUint256);
       await txApprove.wait();
       console.log('approved');
       await loadEthAccInfo(tokenAddress)
